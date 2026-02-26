@@ -1,1 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroIrriga Pro - Controle de Irrigação</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Background Grid -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
 
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-tint"></i>
+                <span>AgroIrriga Pro</span>
+            </div>
+            <nav class="nav">
+                <a href="#dashboard" class="active"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="#valves"><i class="fas fa-faucet"></i> Válvulas</a>
+                <a href="#schedule"><i class="fas fa-calendar-alt"></i> Agenda</a>
+                <a href="#weather"><i class="fas fa-cloud-sun"></i> Clima</a>
+                <a href="#automation"><i class="fas fa-robot"></i> Automação</a>
+            </nav>
+            <div class="header-actions">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot online"></span>
+                    <span>Online</span>
+                </div>
+                <button class="btn-icon" onclick="emergencyStop()" title="Parada de Emergência">
+                    <i class="fas fa-stop-circle"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Dashboard Overview -->
+        <section id="dashboard" class="section">
+            <div class="section-header">
+                <h1>Dashboard de Irrigação</h1>
+                <p>Controle em tempo real das 10 linhas de aspersores</p>
+            </div>
+
+            <!-- Status Cards -->
+            <div class="stats-grid">
+                <div class="stat-card active-valves">
+                    <div class="stat-icon">
+                        <i class="fas fa-faucet-drip"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="activeValvesCount">0</h3>
+                        <p>Válvulas Ativas</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card water-flow">
+                    <div class="stat-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="currentFlow">0 <span>L/min</span></h3>
+                        <p>Vazão Atual</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card weather">
+                    <div class="stat-icon">
+                        <i class="fas fa-temperature-high"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="currentTemp">--°C</h3>
+                        <p>Temperatura</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card next-irrigation">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="nextIrrigation">--:--</h3>
+                        <p>Próxima Irrigação</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Valves Control Grid -->
+            <div class="valves-section" id="valves">
+                <h2><i class="fas fa-faucet"></i> Controle de Válvulas</h2>
+                
+                <div class="valves-grid" id="valvesGrid">
+                    <!-- Válvulas geradas via JavaScript -->
+                </div>
+                
+                <div class="bulk-actions">
+                    <button class="btn btn-secondary" onclick="turnOnAll()">
+                        <i class="fas fa-play"></i> Ligar Todas
+                    </button>
+                    <button class="btn btn-danger" onclick="turnOffAll()">
+                        <i class="fas fa-stop"></i> Desligar Todas
+                    </button>
+                    <button class="btn btn-primary" onclick="openScheduleModal()">
+                        <i class="fas fa-calendar-plus"></i> Agendar Irrigação
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weather Section -->
+        <section id="weather" class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-cloud-sun"></i> Estação Meteorológica</h2>
+                <p>Dados atualizados a cada 2 horas</p>
+            </div>
+            
+            <div class="weather-dashboard">
+                <div class="weather-main">
+                    <div class="weather-card large">
+                        <div class="weather-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <div class="weather-temp" id="mainTemp">--°C</div>
+                        <div class="weather-desc" id="weatherDesc">Carregando...</div>
+                        <div class="weather-meta">
+                            <span><i class="fas fa-droplet"></i> <span id="humidity">--%</span></span>
+                            <span><i class="fas fa-wind"></i> <span id="windSpeed">-- km/h</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="weather-details">
+                    <div class="detail-card">
+                        <i class="fas fa-gauge-high"></i>
+                        <span class="label">Pressão</span>
+                        <span class="value" id="pressure">-- hPa</span>
+                    </div>
+                    <div class="detail-card">
+                        <i class="fas fa-cloud-rain"></i>
+                        <span class="label">Chuva (1h)</span>
+                        <span class="value" id="rain1h">-- mm</span>
+                    </div>
+                    <div class="detail-card">
+                        <i class="fas fa-sun"></i>
+                        <span class="label">Radiação Solar</span>
+                        <span class="value" id="solarRad">-- W/m²</span>
+                    </div>
+                    <div class="detail-card">
+                        <i class="fas fa-clock"></i>
+                        <span class="label">Última Atualização</span>
+                        <span class="value" id="lastUpdate">--</span>
+                    </div>
+                </div>
+                
+                <div class="weather-chart">
+                    <h3>Histórico de Temperatura e Umidade (24h)</h3>
+                    <canvas id="weatherChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Automation Section -->
+        <section id="automation" class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-robot"></i> Automação Inteligente</h2>
+                <p>Irrigação baseada em Machine Learning e condições meteorológicas</p>
+            </div>
+            
+            <div class="automation-panel">
+                <div class="automation-status" id="automationStatus">
+                    <div class="status-header">
+                        <i class="fas fa-brain"></i>
+                        <h3>Assistente ML</h3>
+                        <label class="toggle">
+                            <input type="checkbox" id="mlToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="ml-recommendation" id="mlRecommendation">
+                        <p>Analisando condições...</p>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="automation-rules">
+                    <h3>Regras Automáticas</h3>
+                    <div class="rule-list" id="automationRules">
+                        <!-- Regras geradas via JS -->
+                    </div>
+                    <button class="btn btn-primary" onclick="addRule()">
+                        <i class="fas fa-plus"></i> Nova Regra
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Schedule Section -->
+        <section id="schedule" class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-calendar-alt"></i> Agenda de Irrigação</h2>
+            </div>
+            
+            <div class="schedule-calendar" id="scheduleCalendar">
+                <!-- Calendário de irrigação -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <!-- Valve Control Modal -->
+    <div class="modal" id="valveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Controle da Válvula <span id="modalValveNumber">1</span></h3>
+                <button class="close-btn" onclick="closeModal('valveModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="timer-control">
+                    <label>Tempo de Irrigação (minutos):</label>
+                    <div class="timer-input">
+                        <button onclick="adjustTime(-5)">-5</button>
+                        <input type="number" id="irrigationTime" value="30" min="5" max="120">
+                        <button onclick="adjustTime(5)">+5</button>
+                    </div>
+                </div>
+                
+                <div class="valve-preview">
+                    <div class="valve-animation" id="valveAnimation">
+                        <i class="fas fa-faucet"></i>
+                        <div class="water-flow"></div>
+                    </div>
+                    <p>Pressione para visualizar</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('valveModal')">Cancelar</button>
+                <button class="btn btn-success" onclick="confirmValveAction()">
+                    <i class="fas fa-play"></i> Iniciar Irrigação
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div class="modal emergency-modal" id="emergencyModal">
+        <div class="modal-content">
+            <div class="modal-header emergency">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>PARADA DE EMERGÊNCIA ATIVADA</h3>
+            </div>
+            <div class="modal-body">
+                <p>Todas as válvulas foram desligadas imediatamente.</p>
+                <p class="timestamp" id="emergencyTimestamp"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeModal('emergencyModal')">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
